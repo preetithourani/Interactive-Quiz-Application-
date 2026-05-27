@@ -1,0 +1,408 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+// Encapsulates a quiz question with options and correct answer index
+class Question {
+    private String text;
+    private String[] options;
+    private int correct;
+
+    public Question(String text, String[] options, int correct) {
+        this.text = text;
+        this.options = options;
+        this.correct = correct;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public String[] getOptions() {
+        return options;
+    }
+
+    public int getCorrect() {
+        return correct;
+    }
+}
+
+// Main class — JFrame + ActionListener for event-driven GUI
+public class QuizApp extends JFrame implements ActionListener {
+
+    private Question[] questions;
+    private int index = 0;
+    private int score = 0;
+
+    private JLabel questionLabel;
+    private JLabel scoreLabel;
+    private JLabel progressLabel;
+
+    private JRadioButton[] opts;
+    private ButtonGroup group;
+
+    private JButton nextBtn;
+
+    public QuizApp() {
+        loadQuestions();
+        buildUI();
+        render(index);
+    }
+
+    // Question bank
+    private void loadQuestions() {
+
+        questions = new Question[]{
+
+                new Question(
+                        "What is the size of an int in Java?",
+                        new String[]{
+                                "2 bytes",
+                                "4 bytes",
+                                "8 bytes",
+                                "Platform-dependent"
+                        },
+                        1
+                ),
+
+                new Question(
+                        "Which keyword is used for inheritance in Java?",
+                        new String[]{
+                                "implements",
+                                "inherits",
+                                "extends",
+                                "super"
+                        },
+                        2
+                ),
+
+                new Question(
+                        "What does JVM stand for?",
+                        new String[]{
+                                "Java Variable Module",
+                                "Java Visual Machine",
+                                "Java Virtual Machine",
+                                "Java Verified Model"
+                        },
+                        2
+                ),
+
+                new Question(
+                        "Which collection allows duplicate elements?",
+                        new String[]{
+                                "HashSet",
+                                "TreeSet",
+                                "LinkedList",
+                                "HashMap"
+                        },
+                        2
+                ),
+
+                new Question(
+                        "What is the default value of a boolean in Java?",
+                        new String[]{
+                                "true",
+                                "false",
+                                "0",
+                                "null"
+                        },
+                        1
+                ),
+
+                new Question(
+                        "Which access modifier restricts visibility to the class only?",
+                        new String[]{
+                                "public",
+                                "protected",
+                                "default",
+                                "private"
+                        },
+                        3
+                ),
+
+                new Question(
+                        "Which loop is guaranteed to execute at least once?",
+                        new String[]{
+                                "for",
+                                "while",
+                                "do-while",
+                                "enhanced for"
+                        },
+                        2
+                )
+        };
+    }
+
+    // Build GUI
+    private void buildUI() {
+
+        setTitle("Java Quiz App");
+        setSize(560, 420);
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        setLocationRelativeTo(null);
+
+        setResizable(false);
+
+        JPanel main = new JPanel(new BorderLayout(10, 10));
+
+        main.setBorder(
+                BorderFactory.createEmptyBorder(20, 24, 16, 24)
+        );
+
+        main.setBackground(new Color(245, 247, 252));
+
+        // Header
+        JPanel header = new JPanel(new BorderLayout());
+
+        header.setOpaque(false);
+
+        progressLabel = new JLabel();
+
+        progressLabel.setFont(
+                new Font("SansSerif", Font.PLAIN, 13)
+        );
+
+        scoreLabel = new JLabel("Score: 0");
+
+        scoreLabel.setFont(
+                new Font("SansSerif", Font.BOLD, 13)
+        );
+
+        header.add(progressLabel, BorderLayout.WEST);
+
+        header.add(scoreLabel, BorderLayout.EAST);
+
+        // Question
+        questionLabel = new JLabel();
+
+        questionLabel.setFont(
+                new Font("SansSerif", Font.BOLD, 15)
+        );
+
+        questionLabel.setBorder(
+                BorderFactory.createEmptyBorder(10, 0, 8, 0)
+        );
+
+        // Options Panel
+        JPanel optPanel = new JPanel(new GridLayout(4, 1, 5, 5));
+
+        optPanel.setOpaque(false);
+
+        opts = new JRadioButton[4];
+
+        group = new ButtonGroup();
+
+        for (int i = 0; i < 4; i++) {
+
+            opts[i] = new JRadioButton();
+
+            opts[i].setFont(
+                    new Font("SansSerif", Font.PLAIN, 14)
+            );
+
+            opts[i].setBackground(Color.WHITE);
+
+            opts[i].setOpaque(true);
+
+            opts[i].setBorder(
+                    BorderFactory.createCompoundBorder(
+                            BorderFactory.createLineBorder(
+                                    new Color(210, 215, 230)
+                            ),
+                            BorderFactory.createEmptyBorder(
+                                    8, 12, 8, 12
+                            )
+                    )
+            );
+
+            group.add(opts[i]);
+
+            optPanel.add(opts[i]);
+        }
+
+        // Next Button
+        nextBtn = new JButton("Next →");
+
+        nextBtn.setFont(
+                new Font("SansSerif", Font.BOLD, 14)
+        );
+
+        nextBtn.setBackground(new Color(52, 100, 220));
+
+        nextBtn.setForeground(Color.WHITE);
+
+        nextBtn.setFocusPainted(false);
+
+        nextBtn.addActionListener(this);
+
+        JPanel footer = new JPanel(
+                new FlowLayout(FlowLayout.RIGHT)
+        );
+
+        footer.setOpaque(false);
+
+        footer.add(nextBtn);
+
+        JPanel center = new JPanel(
+                new BorderLayout(0, 10)
+        );
+
+        center.setOpaque(false);
+
+        center.add(questionLabel, BorderLayout.NORTH);
+
+        center.add(optPanel, BorderLayout.CENTER);
+
+        main.add(header, BorderLayout.NORTH);
+
+        main.add(center, BorderLayout.CENTER);
+
+        main.add(footer, BorderLayout.SOUTH);
+
+        add(main);
+
+        setVisible(true);
+    }
+
+    // Render question
+    private void render(int i) {
+
+        progressLabel.setText(
+                "Question " + (i + 1) + " of " + questions.length
+        );
+
+        questionLabel.setText(
+                "<html><body style='width:460px'>" +
+                        (i + 1) + ". " +
+                        questions[i].getText() +
+                        "</body></html>"
+        );
+
+        group.clearSelection();
+
+        String[] o = questions[i].getOptions();
+
+        for (int j = 0; j < 4; j++) {
+
+            opts[j].setText(o[j]);
+
+            opts[j].setBackground(Color.WHITE);
+        }
+
+        if (i == questions.length - 1) {
+            nextBtn.setText("Finish ✓");
+        } else {
+            nextBtn.setText("Next →");
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
+        int sel = -1;
+
+        for (int i = 0; i < 4; i++) {
+
+            if (opts[i].isSelected()) {
+                sel = i;
+                break;
+            }
+        }
+
+        if (sel == -1) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please select an answer.",
+                    "Notice",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            return;
+        }
+
+        boolean correct =
+                sel == questions[index].getCorrect();
+
+        if (correct) {
+
+            opts[sel].setBackground(
+                    new Color(200, 240, 210)
+            );
+
+            score++;
+
+        } else {
+
+            opts[sel].setBackground(
+                    new Color(255, 200, 200)
+            );
+        }
+
+        scoreLabel.setText("Score: " + score);
+
+        index++;
+
+        if (index < questions.length) {
+
+            javax.swing.Timer t =
+                    new javax.swing.Timer(
+                            400,
+                            new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent ev) {
+
+                                    render(index);
+
+                                    ((javax.swing.Timer)
+                                            ev.getSource()).stop();
+                                }
+                            }
+                    );
+
+            t.start();
+
+        } else {
+
+            showResult();
+        }
+    }
+
+    // Final result
+    private void showResult() {
+
+        String msg =
+                "Quiz Complete!\n\n" +
+                        "Score : " + score +
+                        " / " + questions.length +
+                        "\nAccuracy : " +
+                        String.format(
+                                "%.0f%%",
+                                score * 100.0 / questions.length
+                        );
+
+        JOptionPane.showMessageDialog(
+                this,
+                msg,
+                "Final Results",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+
+        System.exit(0);
+    }
+
+    // Main method
+    public static void main(String[] args) {
+
+        SwingUtilities.invokeLater(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        new QuizApp();
+                    }
+                }
+        );
+    }
+}
